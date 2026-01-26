@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Kategoria, Samochod
+from .models import Kategoria, Samochod, UserProfil
 
 @admin.register(Kategoria)
 class KategoriaAdmin(admin.ModelAdmin):
@@ -10,3 +10,34 @@ class SamochodAdmin(admin.ModelAdmin):
     list_display = ('marka', 'model', 'numer_vin', 'rok_produkcji', 'kolor', 'cena_za_dobe', 'kategoria', 'wlasciciel', 'data_dodania')
     list_filter = ('kategoria', 'wlasciciel')
     search_fields = ('marka', 'model', 'numer_vin')
+
+
+    # kto moze edytowac cene:
+    def get_readonly_fields(self, request, obj=None):
+        # pracownik nie bedacy wlasceielem = blokada edytowania ceny za dobe
+        if request.user.groups.filter(name='Pracownicy').exists() and not request.user.is_superuser:
+            return ('cena_za_dobe',) 
+        
+        return ()  #wlasciel i superuser maja mozliwosc edytowania wszystkiego
+
+    # kto co widzi
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        
+        # pracownik i superuser maja widziec wszystkie ofery
+        if request.user.is_superuser or request.user.groups.filter(name='Pracownicy').exists():
+            return qs
+            
+        # Wlasciciel nie widzi aut innuch wlascicieli
+        return qs.filter(wlasciciel=request.user)
+    
+
+    #automatyczne przypisywanie wlasciciela do dodawanych aut
+    def save_model(self, request, obj, form, change): 
+        if not obj.pk: 
+            obj.wlasciciel = request.user
+        super().save_model(request, obj, form, change)
+
+class UserProfilAdmin(admin.ModelAdmin):
+    list_display = ('user', 'posiada_prawo_jazdy', 'numer_telefonu')
+    list_filter = ('posiada_prawo_jazdy',)

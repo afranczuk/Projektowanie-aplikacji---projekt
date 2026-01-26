@@ -2,12 +2,14 @@ from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, MinLengthValidator 
+
 class Kategoria(models.Model):
     nazwa = models.CharField(max_length=100, unique=True)
     opis = models.TextField(blank=True)
 
     def __str__(self):
         return self.nazwa
+    
 
 class Samochod(models.Model):
     marka = models.CharField(max_length=100)
@@ -22,3 +24,12 @@ class Samochod(models.Model):
 
     def __str__(self):
         return f"{self.marka} {self.model} ({self.rok_produkcji})"
+ 
+    
+class UserProfil(models.Model):
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
+    posiada_prawo_jazdy = models.BooleanField(default=False)
+    numer_telefonu = models.CharField(max_length=12, default="+48",validators=[MinLengthValidator(12)])
+
+    def __str__(self):
+        return f"Profil: {self.user.username}"
