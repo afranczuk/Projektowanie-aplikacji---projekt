@@ -25,6 +25,17 @@ class Samochod(models.Model):
     def __str__(self):
         return f"{self.marka} {self.model} ({self.rok_produkcji})"
  
+class Wynajem(models.Model):
+    samochod = models.ForeignKey('Samochod', on_delete=models.CASCADE)
+    uzytkownik = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    data_wynajmu = models.DateField(default=timezone.now)
+    ilosc_dni = models.PositiveIntegerField(default=1)
+    data_od = models.DateField(null=True, blank=True)
+    data_do = models.DateField(null=True, blank=True)
+    laczna_cena = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    
+    def __str__(self):
+        return f"{self.samochod} wynajęty przez {self.uzytkownik.username}"
     
 class UserProfil(models.Model):
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
@@ -33,3 +44,15 @@ class UserProfil(models.Model):
 
     def __str__(self):
         return f"Profil: {self.user.username}"
+
+class Wynajem(models.Model):
+    samochod = models.ForeignKey('Samochod', on_delete=models.CASCADE)
+    uzytkownik = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    data_wynajmu = models.DateField(default=timezone.now)
+    ilosc_dni = models.PositiveIntegerField(default=1)
+    data_od = models.DateField(null=True, blank=True)
+    data_do = models.DateField(null=True, blank=True)
+    laczna_cena = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    
+    def __str__(self):
+        return f"{self.samochod} wynajęty przez {self.uzytkownik.username}"

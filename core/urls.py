@@ -1,22 +1,38 @@
-"""
-URL configuration for core project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path
+from django.contrib.auth import views as auth_views
+from wypozyczalnia import views 
+
+#urlpatterns = [
+    # 1. Panel Admina
+   # path('admin/', admin.site.urls),
+
+    # 2. Twoja rejestracja (używamy funkcji z pliku views.py w wypozyczalnia)
+    #path('rejestracja/', views.rejestracja, name='rejestracja'),
+
+    # 3. Logowanie (używamy gotowca z Django)
+    #path('logowanie/', auth_views.LoginView.as_view(template_name='uzytkownik_logowanie.html'), name='logowanie'),
+
+   # path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    
+    #path('', views.strona_glowna, name='home'), 
+
+    #path('moje_auta/', views.moje_auta, name='moje_auta'),
+
+#    path('moje_wynajmy/', views.moje_wynajmy, name='moje_wynajmy'),
+#]
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('rejestracja/', views.rejestracja, name='rejestracja'),
+    path('logowanie/', auth_views.LoginView.as_view(template_name='uzytkownik_logowanie.html'), name='logowanie'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    path('', views.strona_glowna, name='home'),
+    path('moje_auta/', views.moje_auta, name='moje_auta'),
+    path('moje_wynajmy/', views.moje_wynajmy, name='moje_wynajmy'),
+    path('wynajmij/<int:auto_id>/', views.wynajmij_samochod, name='wynajmij_samochod'),
+    path('wynajem/<int:auto_id>/', views.wynajem_szczegoly, name='wynajem_szczegoly'),
+    path('po_wynajeciu/', views.po_wynajeciu, name='po_wynajeciu'),
+
 ]

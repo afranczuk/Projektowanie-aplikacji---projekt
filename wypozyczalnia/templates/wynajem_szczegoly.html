@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wynajem auta</title>
+</head>
+<body>
+<h1>Wynajmujesz auto: {{ auto.marka }} {{ auto.model }}</h1>
+<p>Cena za dobę: {{ auto.cena_za_dobe }} zł</p>
+<p>Kolor: {{ auto.kolor }}</p>
+<p>Kategoria: {{ auto.kategoria.nazwa }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p>
+        <label>
+            {{ form.akceptuje_regulamin }} Akceptuję <a href="/regulamin/">regulamin</a>
+        </label>
+    </p>
+    <button type="submit">Wynajmuję</button>
+</form>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>strona glowna</title>
+</head>
+<body>
+
+<h1>Witaj w wypożyczalni!</h1>
+
+{% if user.is_authenticated %}
+    <p>Jesteś zalogowany jako: {{ user.username }}</p>
+
+    {% if is_wlasciciel %}
+        <a href="{% url 'moje_auta' %}">Moje auta</a>
+    {% else %}
+        <a href="{% url 'moje_wynajmy' %}">Moje wynajmy</a>
+    {% endif %}
+    <a href="{% url 'logout' %}">Wyloguj</a>
+
+{% else %}
+    <a href="{% url 'logowanie' %}">Zaloguj się</a>
+    <a href="{% url 'rejestracja' %}">Zarejestruj się</a>
+{% endif %}
+
+<h2>Dostępne samochody</h2>
+
+{% for auto in samochody %}
+<div>
+    <h3>{{ auto.marka }} {{ auto.model }}</h3>
+    <p>Kategoria: {{ auto.kategoria.nazwa }}</p>
+    <p>Kolor: {{ auto.kolor }}</p>
+    <p>Cena/dobę: {{ auto.cena_za_dobe }} zł</p>
+
+    {% if user.is_authenticated and not is_wlasciciel %}
+        {% if user.userprofil.posiada_prawo_jazdy %}
+            <a href="{% url 'wynajem_szczegoly' auto.pk %}">Wynajmij</a>
+        {% else %}
+            <button disabled>Wynajmij</button>
+        {% endif %}
+    {% elif not user.is_authenticated %}
+        <a href="{% url 'logowanie' %}">Zaloguj się, aby wynająć</a>
+    {% endif %}
+</div>
+{% empty %}
+<p>Brak samochodów w ofercie.</p>
+{% endfor %}
+
+</body>
+</html>

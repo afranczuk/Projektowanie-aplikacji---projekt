@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logowanie</title>
+</head>
+<body>
+    <h2>Zaloguj się do systemu</h2>
+
+    {% if form.errors %}
+        <p style="color: red;">Błędny login lub hasło. Spróbuj ponownie.</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'logowanie' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Zaloguj się</button>
+</form>
+
+    <hr>
+    <p>Nie masz konta? <a href="{% url 'rejestracja' %}">Zarejestruj się tutaj</a></p>
+</body>
+</html>

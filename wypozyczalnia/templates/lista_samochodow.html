@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>samochody</title>
+</head>
+<body>
+
+<h1>Lista samochodów</h1>
+
+{% for auto in samochody %}
+<div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+    <h3>{{ auto.marka }} {{ auto.model }} ({{ auto.rok_produkcji }})</h3>
+    <p>Kategoria: {{ auto.kategoria.nazwa }}</p>
+    <p>Kolor: {{ auto.kolor }}</p>
+    <p>Cena za dobę: {{ auto.cena_za_dobe }} zł</p>
+</div>
+{% empty %}
+<p>Brak samochodów do wyświetlenia.</p>
+{% endfor %}

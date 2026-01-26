@@ -1,0 +1,12 @@
+<h1>Moje auta</h1>
+
+{% for auto in samochody %}
+<div>
+    <h3>{{ auto.marka }} {{ auto.model }}</h3>
+    <p>Kategoria: {{ auto.kategoria.nazwa }}</p>
+    <p>Kolor: {{ auto.kolor }}, Cena/dobę: {{ auto.cena_za_dobe }} zł</p>
+    <!-- możesz dodać przyciski Edytuj / Usuń jeśli chcesz -->
+</div>
+{% empty %}
+<p>Nie masz jeszcze żadnych aut.</p>
+{% endfor %}

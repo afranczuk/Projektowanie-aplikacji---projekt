@@ -1,0 +1,11 @@
+<h1>Moje wynajmowane auta</h1>
+
+{% for w in wynajmy %}
+<div>
+    <h3>{{ w.samochod.marka }} {{ w.samochod.model }}</h3>
+    <p>Data wynajmu: {{ w.data_wynajmu }}</p>
+    <p>Ilość dni: {{ w.ilosc_dni }}</p>
+</div>
+{% empty %}
+<p>Nie masz jeszcze żadnych wynajmów.</p>
+{% endfor %}
