@@ -4,7 +4,16 @@
     <title>Wynajem zakończony</title>
 </head>
 <body>
-<h1>Gratulacje! Wynająłeś auto.</h1>
-<a href="{% url 'home' %}">Powrót do strony głównej</a>
-</body>
-</html>
+<h1>Gratulacje!</h1>
+
+<p>Wynająłeś auto:</p>
+<p><strong>{{ wynajem.samochod.marka }} {{ wynajem.samochod.model }}</strong></p>
+
+<p>Okres wynajmu:
+{{ wynajem.data_od }} – {{ wynajem.data_do }}</p>
+
+<p>Ilość dni: {{ wynajem.ilosc_dni }}</p>
+
+<h2>Łączna cena: {{ wynajem.laczna_cena }} zł</h2>
+
+<a href="{% url 'home' %}">Powrót na stronę główną</a>

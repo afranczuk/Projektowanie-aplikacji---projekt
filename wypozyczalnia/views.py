@@ -1,9 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import RejestracjaForm
-from .models import UserProfil, Samochod, Wynajem
-from .forms import WynajemForm
+from .forms import RejestracjaForm, WniosekWlascicielForm, WynajemForm
+from .models import UserProfil, Samochod, Wynajem, WniosekWlasciciel
 
 
 def rejestracja(request):
@@ -31,7 +30,8 @@ def strona_glowna(request):
 
     is_wlasciciel = False
     if request.user.is_authenticated:
-        is_wlasciciel = request.user.groups.filter(name='Wlasciciele').exists()
+        # Sprawdzamy, czy użytkownik należy do grupy 'Wlasciciele'
+        is_wlasciciel = request.user.groups.filter(name='Wlasciciel').exists()
 
     return render(
         request,
@@ -48,16 +48,16 @@ def strona_glowna(request):
 
 @login_required
 def moje_auta(request):
-    # tylko auta właściciela
+    # Sprawdzamy, czy użytkownik należy do grupy Właściciele
+    if not request.user.groups.filter(name='Wlasciciele').exists():
+        # jeśli nie jest właścicielem → przekierowujemy go na stronę główną
+        return redirect('home')
+
+    # pobieramy tylko auta przypisane do tego użytkownika
     samochody = Samochod.objects.filter(wlasciciel=request.user)
     return render(request, 'moje_auta.html', {'samochody': samochody})
 
 
-
-@login_required
-def moje_wynajmy(request):
-    wynajmy = Wynajem.objects.filter(uzytkownik=request.user)
-    return render(request, 'moje_wynajmy.html', {'wynajmy': wynajmy})
 
 
 @login_required
@@ -78,47 +78,59 @@ def wynajem_szczegoly(request, auto_id):
     if request.method == 'POST':
         form = WynajemForm(request.POST)
         if form.is_valid():
-            wynajem = form.save(commit=False)
-            wynajem.user = request.user
-            wynajem.samochod = auto
-            wynajem.save()
-            auto.delete()
-            # wysłanie powiadomienia właścicielowi (można później wysłać maila)
-            messages.success(request, f"Twoje auto {auto.marka} {auto.model} zostało wynajęte!")
+            data_od = form.cleaned_data['data_od']
+            data_do = form.cleaned_data['data_do']
 
-            return redirect('po_wynajeciu')
+            ilosc_dni = (data_do - data_od).days + 1
+            laczna_cena = ilosc_dni * auto.cena_za_dobe
+
+            wynajem = Wynajem.objects.create(
+                samochod=auto,
+                uzytkownik=request.user,
+                data_od=data_od,
+                data_do=data_do,
+                ilosc_dni=ilosc_dni,
+                laczna_cena=laczna_cena
+            )
+
+            # oznacz auto jako wynajęte
+            auto.wynajety = True
+            auto.save()
+
+            return redirect('po_wynajeciu', wynajem_id=wynajem.id)
     else:
-        form = WynajemForm()
+        form = WynajemForm()  # <<< TU tworzymy form w GET
 
-    return render(request, 'wynajem_szczegoly.html', {'auto': auto, 'form': form})
+    return render(request, 'wynajem_szczegoly.html', {
+        'auto': auto,
+        'form': form
+    })
 
 @login_required
-def wynajem_szczegoly(request, auto_id):
-    auto = get_object_or_404(Samochod, id=auto_id)
+def po_wynajeciu(request, wynajem_id):
+    wynajem = get_object_or_404(Wynajem, id=wynajem_id, uzytkownik=request.user)
 
+    return render(request, 'po_wynajeciu.html', {
+        'wynajem': wynajem
+    })
+
+@login_required
+def wniosek_o_wlasciciela(request):
     if request.method == 'POST':
-        form = WynajemForm(request.POST)
+        form = WniosekWlascicielForm(request.POST)
         if form.is_valid():
-            wynajem = form.save(commit=False)
-            wynajem.uzytkownik = request.user
-            wynajem.samochod = auto
-            wynajem.laczna_cena = wynajem.ilosc_dni * auto.cena_za_dobe
-            wynajem.save()
-
-            # powiadomienie właściciela (można wysłać maila)
-            messages.success(request, f"Twoje auto {auto.marka} {auto.model} zostało wynajęte! Właściciel otrzyma powiadomienie.")
-
-            # usuwamy auto z dostępnych (opcjonalnie, jeśli nie chcesz go całkiem usuwać, możesz dodać status)
-            auto.delete()
-
-            return redirect('po_wynajeciu')
+            wniosek = form.save(commit=False)
+            wniosek.uzytkownik = request.user
+            wniosek.save()
+            messages.success(request, "Twój wniosek został wysłany. Pracownik rozpatrzy go w ciągu max 5 dni roboczych.")
+            return redirect('home')
     else:
-        form = WynajemForm()
-
-    return render(request, 'wynajem_szczegoly.html', {'auto': auto, 'form': form})
-
+        form = WniosekWlascicielForm()
+    
+    return render(request, 'wniosek_o_wlasciciela.html', {'form': form})
 
 
 @login_required
-def po_wynajeciu(request):
-    return render(request, 'po_wynajeciu.html')
+def moje_wynajmy(request):
+    wynajmy = Wynajem.objects.filter(uzytkownik=request.user)
+    return render(request, 'moje_wynajmy.html', {'wynajmy': wynajmy})

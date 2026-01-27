@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chcę zostać właścicielem</title>
+</head>
+<body>
+    <h2>Wniosek o zostanie właścicielem</h2>
+    <p>Po wysłaniu wniosku pracownik rozpatrzy go w ciągu max 5 dni roboczych.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Wyślij wniosek</button>
+    </form>
+
+    <p><a href="{% url 'home' %}">Powrót do strony głównej</a></p>
+</body>
+</html>

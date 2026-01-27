@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import UserProfil, Wynajem
+from .models import UserProfil, Wynajem, WniosekWlasciciel
+
 
 class RejestracjaForm(UserCreationForm):
     posiada_prawo_jazdy = forms.BooleanField(
@@ -21,11 +22,14 @@ class RejestracjaForm(UserCreationForm):
 
 
 class WynajemForm(forms.ModelForm):
-    akceptuje_regulamin = forms.BooleanField(required=True, label="Akceptuję regulamin")
+    akceptuje_regulamin = forms.BooleanField(
+        required=True,
+        label="Akceptuję regulamin"
+    )
 
     class Meta:
         model = Wynajem
-        fields = ['data_od', 'data_do', 'ilosc_dni']
+        fields = ['data_od', 'data_do']
         widgets = {
             'data_od': forms.DateInput(attrs={'type': 'date'}),
             'data_do': forms.DateInput(attrs={'type': 'date'}),
@@ -36,9 +40,23 @@ class WynajemForm(forms.ModelForm):
         data_od = cleaned_data.get('data_od')
         data_do = cleaned_data.get('data_do')
 
-        if data_od and data_do:
-            if data_do < data_od:
-                raise forms.ValidationError("Data zakończenia wynajmu nie może być wcześniejsza niż data rozpoczęcia.")
-            cleaned_data['ilosc_dni'] = (data_do - data_od).days + 1
+        if data_od and data_do and data_do < data_od:
+            raise forms.ValidationError(
+                "Data zakończenia nie może być wcześniejsza niż data rozpoczęcia."
+            )
 
         return cleaned_data
+
+
+class WniosekWlascicielForm(forms.ModelForm):
+    class Meta:
+        model = WniosekWlasciciel
+        fields = ['imie', 'nazwisko', 'dodatkowe_info']
+        widgets = {
+            'dodatkowe_info': forms.Textarea(attrs={'rows': 3}),
+        }
+        labels = {
+            'imie': "Imię",
+            'nazwisko': "Nazwisko",
+            'dodatkowe_info': "Dodatkowe informacje (opcjonalnie)",
+        }

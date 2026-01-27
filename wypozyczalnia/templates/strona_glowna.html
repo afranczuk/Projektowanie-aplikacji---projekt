@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>strona glowna</title>
+    <title>Strona główna</title>
 </head>
 <body>
 
@@ -11,16 +11,22 @@
     <p>Jesteś zalogowany jako: {{ user.username }}</p>
 
     {% if is_wlasciciel %}
+        <!-- Właściciel widzi swoje auta -->
         <a href="{% url 'moje_auta' %}">Moje auta</a>
     {% else %}
+        <!-- Zwykły użytkownik widzi swoje wynajmy -->
         <a href="{% url 'moje_wynajmy' %}">Moje wynajmy</a>
+        <!-- I link do wniosku o właściciela -->
+        <p><a href="{% url 'wniosek_o_wlasciciela' %}">Chcę zostać właścicielem</a></p>
     {% endif %}
+
     <a href="{% url 'logout' %}">Wyloguj</a>
 
 {% else %}
     <a href="{% url 'logowanie' %}">Zaloguj się</a>
     <a href="{% url 'rejestracja' %}">Zarejestruj się</a>
 {% endif %}
+
 
 <h2>Dostępne samochody</h2>
 
@@ -31,13 +37,15 @@
     <p>Kolor: {{ auto.kolor }}</p>
     <p>Cena/dobę: {{ auto.cena_za_dobe }} zł</p>
 
-    {% if user.is_authenticated and not is_wlasciciel %}
-        {% if user.userprofil.posiada_prawo_jazdy %}
-            <a href="{% url 'wynajem_szczegoly' auto.pk %}">Wynajmij</a>
-        {% else %}
-            <button disabled>Wynajmij</button>
+    {% if user.is_authenticated %}
+        {% if not is_wlasciciel %}
+            {% if user.userprofil.posiada_prawo_jazdy %}
+                <a href="{% url 'wynajem_szczegoly' auto.pk %}">Wynajmij</a>
+            {% else %}
+                <button disabled>Wynajmij</button>
+            {% endif %}
         {% endif %}
-    {% elif not user.is_authenticated %}
+    {% else %}
         <a href="{% url 'logowanie' %}">Zaloguj się, aby wynająć</a>
     {% endif %}
 </div>
