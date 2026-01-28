@@ -5,28 +5,51 @@
 </head>
 <body>
 
+{# Wyświetlanie komunikatów (np. o wysłaniu wniosku) #}
+{% if messages %}
+    {% for message in messages %}
+        <div style="padding: 10px; margin-bottom: 10px; border: 1px solid; 
+                    color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
 <h1>Witaj w wypożyczalni!</h1>
 
 {% if user.is_authenticated %}
-    <p>Jesteś zalogowany jako: {{ user.username }}</p>
+    <p>Jesteś zalogowany jako: <strong>{{ user.username }}</strong></p>
 
-    {% if is_wlasciciel %}
-        <!-- Właściciel widzi swoje auta -->
-        <a href="{% url 'moje_auta' %}">Moje auta</a>
-    {% else %}
-        <!-- Zwykły użytkownik widzi swoje wynajmy -->
-        <a href="{% url 'moje_wynajmy' %}">Moje wynajmy</a>
-        <!-- I link do wniosku o właściciela -->
-        <p><a href="{% url 'wniosek_o_wlasciciela' %}">Chcę zostać właścicielem</a></p>
-    {% endif %}
-
-    <a href="{% url 'logout' %}">Wyloguj</a>
+    <nav>
+        {# 5. Admin widzi obie zakładki #}
+        {% if user.is_superuser %}
+            <a href="{% url 'moje_auta' %}">Zarządzaj autami (Admin)</a> | 
+            <a href="{% url 'moje_wynajmy' %}">Wszystkie wynajmy</a>
+        
+        {# 4. Właściciel widzi TYLKO moje auta #}
+        {% elif is_wlasciciel %}
+            <a href="{% url 'moje_auta' %}">Moje auta</a>
+        
+        {# Zwykły użytkownik widzi TYLKO moje wynajmy i wniosek #}
+        {% else %}
+            <a href="{% url 'moje_wynajmy' %}">Moje wynajmy</a>
+            <p>
+                <a href="{% url 'wniosek_o_wlasciciela' %}" style="color: blue;">
+                    Chcę zostać właścicielem
+                </a>
+            </p>
+        {% endif %}
+        
+        <br><br>
+        <a href="{% url 'logout' %}">Wyloguj</a>
+    </nav>
 
 {% else %}
     <a href="{% url 'logowanie' %}">Zaloguj się</a>
     <a href="{% url 'rejestracja' %}">Zarejestruj się</a>
 {% endif %}
 
+<hr>
 
 <h2>Dostępne samochody</h2>
 
@@ -37,18 +60,28 @@
     <p>Kolor: {{ auto.kolor }}</p>
     <p>Cena/dobę: {{ auto.cena_za_dobe }} zł</p>
 
-    {% if user.is_authenticated %}
-        {% if not is_wlasciciel %}
-            {% if user.userprofil.posiada_prawo_jazdy %}
-                <a href="{% url 'wynajem_szczegoly' auto.pk %}">Wynajmij</a>
-            {% else %}
-                <button disabled>Wynajmij</button>
-            {% endif %}
-        {% endif %}
+    {% if auto.id in zajete_auta_ids %}
+        <p style="color:red;">Niedostępne (Obecnie wynajęte)</p>
+        <button disabled>Wynajmij</button>
     {% else %}
-        <a href="{% url 'logowanie' %}">Zaloguj się, aby wynająć</a>
+        {% if user.is_authenticated %}
+            {# Właściciel nie może wynajmować aut (zgodnie z Twoim założeniem) #}
+            {% if not is_wlasciciel and not user.is_superuser %}
+                {% if user.userprofil.posiada_prawo_jazdy %}
+                    <a href="{% url 'wynajem_szczegoly' auto.pk %}">Wynajmij</a>
+                {% else %}
+                    <p style="color: orange;">Musisz mieć prawo jazdy, aby wynająć.</p>
+                    <button disabled>Wynajmij</button>
+                {% endif %}
+            {% elif user.is_superuser %}
+                <span style="color: gray;">(Podgląd admina)</span>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'logowanie' %}">Zaloguj się, aby wynająć</a>
+        {% endif %}
     {% endif %}
 </div>
+<hr>
 {% empty %}
 <p>Brak samochodów w ofercie.</p>
 {% endfor %}

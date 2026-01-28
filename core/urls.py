@@ -31,7 +31,6 @@ urlpatterns = [
     path('', views.strona_glowna, name='home'),
     path('moje_auta/', views.moje_auta, name='moje_auta'),
     path('moje_wynajmy/', views.moje_wynajmy, name='moje_wynajmy'),
-    path('wynajmij/<int:auto_id>/', views.wynajmij_samochod, name='wynajmij_samochod'),
     path('wynajem/<int:auto_id>/', views.wynajem_szczegoly, name='wynajem_szczegoly'),
     path('po_wynajeciu/<int:wynajem_id>/', views.po_wynajeciu, name='po_wynajeciu'),
     path('wniosek-wlasciciela/', views.wniosek_o_wlasciciela, name='wniosek_o_wlasciciela'),

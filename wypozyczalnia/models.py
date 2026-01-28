@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, MinLengthValidator 
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator 
 
 class Kategoria(models.Model):
     nazwa = models.CharField(max_length=100, unique=True)
@@ -22,10 +23,15 @@ class Samochod(models.Model):
     data_dodania = models.DateField(default=timezone.now)
     kategoria = models.ForeignKey(Kategoria, on_delete=models.CASCADE)
     wlasciciel = models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    wynajety = models.BooleanField(default=False)
+   # wynajety = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.marka} {self.model} ({self.rok_produkcji})"
+
+    def aktualny_wynajem(self):
+        from datetime import date
+        # Szukamy wynajmu tego auta, który trwa dzisiaj
+        return self.wynajem_set.filter(data_od__lte=date.today(), data_do__gte=date.today()).first()
  
 class Wynajem(models.Model):
     samochod = models.ForeignKey('Samochod', on_delete=models.CASCADE)
@@ -39,14 +45,7 @@ class Wynajem(models.Model):
 
     def __str__(self):
         return f"{self.samochod} – {self.uzytkownik.username}"
-    
-class UserProfil(models.Model):
-    user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
-    posiada_prawo_jazdy = models.BooleanField(default=False)
-    numer_telefonu = models.CharField(max_length=12, default="+48",validators=[MinLengthValidator(12)])
 
-    def __str__(self):
-        return f"Profil: {self.user.username}"
 
 
 class WniosekWlasciciel(models.Model):
@@ -60,3 +59,24 @@ class WniosekWlasciciel(models.Model):
     def __str__(self):
         status = "zatwierdzony" if self.zatwierdzony else "w oczekiwaniu"
         return f"Wniosek {self.uzytkownik.username} – {status}"
+
+
+
+class UserProfil(models.Model):
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
+    posiada_prawo_jazdy = models.BooleanField(default=False)
+    
+    # Poprawione pole z walidacją
+    numer_telefonu = models.CharField(
+        max_length=12, 
+        default="+48",
+        validators=[
+            RegexValidator(
+                regex=r'^\+?\d{9,12}$', 
+                message="Numer telefonu może zawierać tylko cyfry i opcjonalnie '+' na początku."
+            )
+        ]
+    )
+
+    def __str__(self):
+        return f"Profil: {self.user.username}"

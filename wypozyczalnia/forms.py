@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import UserProfil, Wynajem, WniosekWlasciciel
+from django.core.validators import RegexValidator
 
 
 class RejestracjaForm(UserCreationForm):
@@ -10,15 +11,20 @@ class RejestracjaForm(UserCreationForm):
         label="Czy posiadasz prawo jazdy?"
     )
     numer_telefonu = forms.CharField(
-        max_length=12, 
-        initial="+48", 
-        label="Numer telefonu"
+        max_length=12,
+        initial="+48",
+        label="Numer telefonu",
+        validators=[
+            RegexValidator(
+                regex=r'^\+?\d{9,12}$',
+                message="Numer telefonu musi składać się wyłącznie z cyfr!"
+            )
+        ]
     )
 
     class Meta(UserCreationForm.Meta):
         model = User
         fields = UserCreationForm.Meta.fields + ('posiada_prawo_jazdy', 'numer_telefonu')
-
 
 
 class WynajemForm(forms.ModelForm):

@@ -1,11 +1,68 @@
-<h1>Moje wynajmowane auta</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moje Wynajmy</title>
+    <style>
+        .wynajem-box {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-alert {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border: 1px solid #ffeeba;
+        }
+        .owner-info {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        .date-highlight { font-weight: bold; color: #007bff; }
+    </style>
+</head>
+<body>
+
+<h1>Twoje Wynajmy</h1>
+<a href="{% url 'home' %}">← Powrót do oferty</a>
+<hr>
 
 {% for w in wynajmy %}
-<div>
-    <h3>{{ w.samochod.marka }} {{ w.samochod.model }}</h3>
-    <p>Data wynajmu: {{ w.data_wynajmu }}</p>
-    <p>Ilość dni: {{ w.ilosc_dni }}</p>
-</div>
+    <div class="wynajem-box">
+        <h2>Samochód: {{ w.samochod.marka }} {{ w.samochod.model }}</h2>
+        
+        <p>Termin wynajmu: 
+            <span class="date-highlight">{{ w.data_od }}</span> do 
+            <span class="date-highlight">{{ w.data_do }}</span>
+        </p>
+
+        <div class="status-alert">
+            <strong>⚠️ Przypomnienie:</strong> Pamiętaj, aby zwrócić auto w terminie do właściciela!
+        </div>
+
+        <div class="owner-info">
+            <h3>Dane właściciela:</h3>
+            <p><strong>Użytkownik:</strong> {{ w.samochod.wlasciciel.username }}</p>
+            <p><strong>Imię i nazwisko:</strong> {{ w.samochod.wlasciciel.first_name }} {{ w.samochod.wlasciciel.last_name }}</p>
+            <p><strong>Email:</strong> {{ w.samochod.wlasciciel.email }}</p>
+            {# Zakładamy, że właściciel też ma UserProfil z telefonem #}
+            <p><strong>Telefon kontaktowy:</strong> {{ w.samochod.wlasciciel.userprofil.numer_telefonu }}</p>
+        </div>
+        
+        <p style="margin-top: 15px;">
+            <strong>Koszt całkowity:</strong> {{ w.laczna_cena }} zł
+        </p>
+    </div>
 {% empty %}
-<p>Nie masz jeszcze żadnych wynajmów.</p>
+    <p>Nie masz jeszcze żadnych aktywnych wynajmów. <a href="{% url 'home' %}">Wynajmij coś!</a></p>
 {% endfor %}
+
+</body>
+</html>

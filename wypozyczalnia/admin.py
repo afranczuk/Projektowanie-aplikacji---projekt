@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Kategoria, Samochod, UserProfil
+from .models import Kategoria, Samochod, UserProfil, WniosekWlasciciel
+
 
 @admin.register(Kategoria)
 class KategoriaAdmin(admin.ModelAdmin):
@@ -41,3 +42,30 @@ class SamochodAdmin(admin.ModelAdmin):
 class UserProfilAdmin(admin.ModelAdmin):
     list_display = ('user', 'posiada_prawo_jazdy', 'numer_telefonu')
     list_filter = ('posiada_prawo_jazdy',)
+
+
+from django.contrib import admin, messages
+from django.contrib.auth.models import Group
+from .models import WniosekWlasciciel
+
+@admin.register(WniosekWlasciciel)
+class WniosekWlascicielAdmin(admin.ModelAdmin):
+    list_display = ('uzytkownik', 'imie', 'nazwisko', 'zatwierdzony')
+    actions = ['zatwierdz_wnioski'] # Dodajemy akcję do listy
+
+    @admin.action(description="Zatwierdź wybrane wnioski i dodaj do grupy Wlasciciel")
+    def zatwierdz_wnioski(self, request, queryset):
+        # Pobieramy (lub tworzymy na wszelki wypadek) grupę
+        grupa_wlasciciel, _ = Group.objects.get_or_create(name='Wlasciciel')
+        
+        licznik = 0
+        for wniosek in queryset:
+            if not wniosek.zatwierdzony:
+                # 1. Dodajemy użytkownika do grupy
+                wniosek.uzytkownik.groups.add(grupa_wlasciciel)
+                # 2. Oznaczamy wniosek jako zatwierdzony
+                wniosek.zatwierdzony = True
+                wniosek.save()
+                licznik += 1
+        
+        self.message_user(request, f"Pomyślnie zatwierdzono {licznik} wniosków.")

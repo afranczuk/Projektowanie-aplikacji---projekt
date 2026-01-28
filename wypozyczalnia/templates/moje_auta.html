@@ -1,12 +1,72 @@
-<h1>Moje auta</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moje Auta</title>
+    <style>
+        /* Tutaj ląduje cały wygląd, żeby nie brudził kodu poniżej */
+        .lista-aut { list-style-type: none; padding: 0; }
+        .auto-item { margin-bottom: 25px; border-left: 4px solid #ccc; padding-left: 15px; }
+        .wynajete { color: red; font-weight: bold; }
+        .wolne { color: green; font-weight: bold; }
+        .dane-najemcy { background-color: #f4f4f4; padding: 5px; margin-top: 5px; border-radius: 4px; }
+        .techniczne { color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
 
-{% for auto in samochody %}
-<div>
-    <h3>{{ auto.marka }} {{ auto.model }}</h3>
-    <p>Kategoria: {{ auto.kategoria.nazwa }}</p>
-    <p>Kolor: {{ auto.kolor }}, Cena/dobę: {{ auto.cena_za_dobe }} zł</p>
-    <!-- możesz dodać przyciski Edytuj / Usuń jeśli chcesz -->
+<h1>Twoje samochody w ofercie</h1>
+<a href="{% url 'home' %}">Powrót do strony głównej</a>
+<hr>
+<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h2 style="margin: 0;">Twój Portfel</h2>
+    <p style="font-size: 1.2em;">Łączny przychód z wynajmów: <strong>{{ total_zarobek }} zł</strong></p>
 </div>
-{% empty %}
-<p>Nie masz jeszcze żadnych aut.</p>
-{% endfor %}
+
+<ul class="lista-aut">
+    {% for auto in samochody %}
+        <li class="auto-item">
+            <strong>{{ auto.marka }} {{ auto.model }}</strong> ({{ auto.cena_za_dobe }} zł/doba)
+            
+            <div class="techniczne">
+                VIN: {{ auto.numer_vin }} | Rok produkcji: {{ auto.rok_produkcji }}
+            </div>
+
+            {% with wynajem=auto.aktualny_wynajem %}
+                {% if wynajem %}
+                    <span class="wynajete">● WYNAJĘTE (do {{ wynajem.data_do }})</span>
+                    <div class="dane-najemcy">
+                        <strong>Najemca:</strong> {{ wynajem.uzytkownik.username }} | 
+                        <strong>Kontakt:</strong> {{ wynajem.uzytkownik.userprofil.numer_telefonu }}
+                    </div>
+                {% else %}
+                    <span class="wolne">● WOLNE</span>
+                {% endif %}
+            {% endwith %}
+        </li>
+    {% empty %}
+        <li>Nie masz jeszcze dodanych żadnych samochodów.</li>
+    {% endfor %}
+</ul>
+<details style="margin-top: 10px; cursor: pointer;">
+    <summary>Pokaż historię wynajmów tego auta</summary>
+    <table border="1" style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+        <tr style="background: #eee;">
+            <th>Najemca</th>
+            <th>Termin</th>
+            <th>Kwota</th>
+        </tr>
+        {% for w in auto.wynajem_set.all %}
+        <tr>
+            <td>{{ w.uzytkownik.username }}</td>
+            <td>{{ w.data_od }} - {{ w.data_do }}</td>
+            <td>{{ w.laczna_cena }} zł</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">Brak historii wynajmów.</td></tr>
+        {% endfor %}
+    </table>
+</details>
+
+
+</body>
+</html>
