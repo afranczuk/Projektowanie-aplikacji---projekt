@@ -49,18 +49,15 @@ class Wynajem(models.Model):
 
 
 class WniosekWlasciciel(models.Model):
-    uzytkownik = models.ForeignKey(User, on_delete=models.CASCADE)
-    imie = models.CharField(max_length=50)
-    nazwisko = models.CharField(max_length=50)
-    dodatkowe_info = models.TextField(blank=True, null=True)
-    data_zlozenia = models.DateTimeField(default=timezone.now)
-    zatwierdzony = models.BooleanField(default=False)
+    uzytkownik = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    imie = models.CharField(max_length=100)
+    nazwisko = models.CharField(max_length=100)
+    regulamin = models.BooleanField(default=False) # To jest Twój regulamin
+    zatwierdzony = models.BooleanField(default=False) # To jest ten przycisk do akceptacji
+    data_wyslania = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        status = "zatwierdzony" if self.zatwierdzony else "w oczekiwaniu"
-        return f"Wniosek {self.uzytkownik.username} – {status}"
-
-
+        return f"Wniosek od {self.uzytkownik.username}"
 
 class UserProfil(models.Model):
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE)

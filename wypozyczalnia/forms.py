@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import UserProfil, Wynajem, WniosekWlasciciel
+from .models import UserProfil, Wynajem, WniosekWlasciciel, Samochod
 from django.core.validators import RegexValidator
 
 
@@ -57,12 +57,24 @@ class WynajemForm(forms.ModelForm):
 class WniosekWlascicielForm(forms.ModelForm):
     class Meta:
         model = WniosekWlasciciel
-        fields = ['imie', 'nazwisko', 'dodatkowe_info']
-        widgets = {
-            'dodatkowe_info': forms.Textarea(attrs={'rows': 3}),
-        }
+        fields = ['imie', 'nazwisko', 'regulamin'] # Dodajemy regulamin, żeby był widoczny
         labels = {
-            'imie': "Imię",
-            'nazwisko': "Nazwisko",
-            'dodatkowe_info': "Dodatkowe informacje (opcjonalnie)",
+            'imie': 'Imię',
+            'nazwisko': 'Nazwisko',
+            'regulamin': 'Akceptuję regulamin serwisu',
+        }
+
+class SamochodForm(forms.ModelForm):
+    class Meta:
+        model = Samochod
+        # Dodajemy 'numer_vin' do listy:
+        fields = ['marka', 'model', 'rok_produkcji', 'cena_za_dobe', 'kolor', 'kategoria', 'numer_vin']
+        labels = {
+            'marka': 'Marka pojazdu',
+            'model': 'Model pojazdu',
+            'rok_produkcji': 'Rok produkcji',
+            'cena_za_dobe': 'Cena za dobę (PLN)',
+            'kolor': 'Kolor nadwozia',
+            'kategoria': 'Kategoria pojazdu',
+            'numer_vin': 'Numer VIN (musi być unikalny)',
         }

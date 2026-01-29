@@ -1,19 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
-    <title>Chcę zostać właścicielem</title>
+    <meta charset="UTF-8">
+    <title>Zostań Partnerem | Premium</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #121212; 
+            color: #e0e0e0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .split-container { 
+            display: flex; 
+            width: 90%; 
+            max-width: 1000px; 
+            background: #1e1e1e; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            border: 1px solid #2a2a2a;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        /* Lewa strona - Informacyjna */
+        .info-side { 
+            flex: 1; 
+            padding: 60px; 
+            background: linear-gradient(135deg, #1b2e1b 0%, #121212 100%); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+        }
+
+        .info-side h2 { font-size: 2.2rem; color: #fff; margin-bottom: 20px; letter-spacing: -1px; }
+        .info-side p { color: #888; line-height: 1.8; font-size: 1rem; }
+        .feature-list { margin-top: 30px; color: #5cb85c; font-weight: 600; list-style: none; padding: 0; }
+        .feature-list li { margin-bottom: 10px; }
+
+        /* Prawa strona - Formularz */
+        .form-side { 
+            flex: 1; 
+            padding: 60px; 
+            background: #1e1e1e;
+        }
+
+        form p { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.8rem; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        
+        input[type="text"], textarea, select { 
+            width: 100%; padding: 12px; background: #252525; border: 1px solid #333; border-radius: 8px; color: #fff; font-family: 'Inter', sans-serif;
+        }
+
+        .btn-submit { 
+            width: 100%; background: #448a44; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 1rem; margin-top: 10px;
+        }
+        .btn-submit:hover { background: #52a352; }
+
+        .footer-text { margin-top: 25px; font-size: 0.8rem; color: #444; line-height: 1.4; }
+        .back-link { display: inline-block; margin-top: 30px; color: #666; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+        .back-link:hover { color: #fff; }
+
+        /* Responsywność */
+        @media (max-width: 800px) {
+            .split-container { flex-direction: column; }
+            .info-side, .form-side { padding: 40px; }
+        }
+    </style>
 </head>
 <body>
-    <h2>Wniosek o zostanie właścicielem</h2>
-    <p>Po wysłaniu wniosku pracownik rozpatrzy go w ciągu max 5 dni roboczych.</p>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Wyślij wniosek</button>
-    </form>
+<div class="split-container">
+    <div class="info-side">
+        <h2>Zostań Partnerem Premium</h2>
+        <p>Dołącz do grona właścicieli i zacznij zarabiać na swojej flocie. Nasz zespół zweryfikuje Twoje zgłoszenie w ciągu 5 dni roboczych.</p>
+        <ul class="feature-list">
+            <li>✓ Pełna kontrola nad cenami</li>
+            <li>✓ Statystyki zarobków</li>
+            <li>✓ Bezpieczny system rezerwacji</li>
+        </ul>
+        <a href="{% url 'home' %}" class="back-link">← Powrót do strony głównej</a>
+    </div>
 
-    <p><a href="{% url 'home' %}">Powrót do strony głównej</a></p>
-    <p><h2>Po kliknieciu wyslij, zostaniesz przeniesony do strony głównej. po rozpatrzeniu Twoje wniosku, zostaniesz poinformowany mailowo</h2></p>
+    <div class="form-side">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-submit">Wyślij wniosek</button>
+        </form>
+        <div class="footer-text">
+            Po wysłaniu wniosku zostaniesz przekierowany na stronę główną. O decyzji poinformujemy Cię mailowo.
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

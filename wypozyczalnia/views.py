@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import RejestracjaForm, WniosekWlascicielForm, WynajemForm
+from .forms import RejestracjaForm, WniosekWlascicielForm, WynajemForm, SamochodForm
 from .models import UserProfil, Samochod, Wynajem, WniosekWlasciciel
 from datetime import date
 from django.db.models import Sum # Dodaj ten import na górze!
+from django.contrib.auth import logout
 
 
 
@@ -40,18 +41,20 @@ def strona_glowna(request):
         'zajete_auta_ids': zajete_auta_ids,
     })
 
-
-
 @login_required
 def moje_auta(request):
+    # Sprawdzamy, czy to właściciel/admin
     if not request.user.groups.filter(name='Wlasciciel').exists() and not request.user.is_superuser:
         return redirect('home')
 
-    # Pobieramy auta właściciela
+    # TUTAJ JEST BŁĄD – MUSI BYĆ FILTER, A NIE ALL
+    # Pobieramy TYLKO auta, których właścicielem jest zalogowany użytkownik (request.user)
     samochody = Samochod.objects.filter(wlasciciel=request.user).prefetch_related('wynajem_set')
 
-    # LICZYMY ZAROBKI: Sumujemy laczna_cena ze wszystkich wynajmów aut tego użytkownika
-    total_zarobek = Wynajem.objects.filter(samochod__wlasciciel=request.user).aggregate(Sum('laczna_cena'))['laczna_cena__sum'] or 0
+    # To samo dla zarobków – liczymy tylko z aut tego konkretnego właściciela
+    total_zarobek = Wynajem.objects.filter(
+        samochod__wlasciciel=request.user
+    ).aggregate(Sum('laczna_cena'))['laczna_cena__sum'] or 0
 
     return render(request, 'moje_auta.html', {
         'samochody': samochody,
@@ -59,12 +62,16 @@ def moje_auta(request):
         'total_zarobek': total_zarobek
     })
 
-# PRZYWRÓCONA FUNKCJA MOJE_WYNAJMY (Punkt 1 z Twojej listy)
+
+
+
 @login_required
 def moje_wynajmy(request):
-    # Pobieramy wynajmy zalogowanego usera wraz z danymi auta i jego właściciela
     wynajmy = Wynajem.objects.filter(uzytkownik=request.user).select_related('samochod__wlasciciel')
-    return render(request, 'moje_wynajmy.html', {'wynajmy': wynajmy})
+    return render(request, 'moje_wynajmy.html', {
+        'wynajmy': wynajmy,
+        'dzisiaj': date.today()  # TA LINIA JEST NIEZBĘDNA DLA PRZYCISKÓW
+    })
 
 @login_required
 def wynajem_szczegoly(request, auto_id):
@@ -120,3 +127,113 @@ def wniosek_o_wlasciciela(request):
     else:
         form = WniosekWlascicielForm()
     return render(request, 'wniosek_o_wlasciciela.html', {'form': form})
+
+@login_required
+def dodaj_auto(request):
+    # 1. Strażnik dostępu
+    if not request.user.groups.filter(name='Wlasciciel').exists() and not request.user.is_superuser:
+        messages.error(request, "Tylko właściciele mogą dodawać auta.")
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = SamochodForm(request.POST)
+        if form.is_valid():
+            # 2. Tworzymy obiekt auta, ale jeszcze go nie wysyłamy do bazy (commit=False)
+            auto = form.save(commit=False)
+            
+            # 3. TUTAJ WKLEJAMY PRZYPISANIE WŁAŚCICIELA
+            auto.wlasciciel = request.user 
+            
+            # 4. Teraz, gdy auto ma już przypisanego właściciela, zapisujemy na stałe
+            auto.save()
+            
+            messages.success(request, "Auto zostało dodane!")
+            return redirect('moje_auta')
+    else:
+        form = SamochodForm()
+        
+    return render(request, 'dodaj_auto.html', {'form': form})
+
+def anuluj_wynajem(request, wynajem_id):
+    # Pobieramy wynajem, ale upewniamy się, że należy do zalogowanego usera
+    wynajem = get_object_or_404(Wynajem, id=wynajem_id, uzytkownik=request.user)
+    
+    # Prosta zasada: nie można anulować czegoś, co już się zaczęło
+    if wynajem.data_od <= date.today():
+        messages.error(request, "Nie możesz anulować wynajmu, który już trwa lub się zakończył.")
+    else:
+        wynajem.delete()
+        messages.success(request, "Wynajem został anulowany.")
+    
+    return redirect('moje_wynajmy')
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')
+
+
+@login_required
+def edytuj_wynajem(request, pk): # <-- teraz pasuje do tego, co wysyła URL
+    wynajem = get_object_or_404(Wynajem, id=pk, uzytkownik=request.user)
+    
+    if wynajem.data_od <= date.today():
+        messages.error(request, "Nie możesz edytować wynajmu, który już trwa.")
+        return redirect('moje_wynajmy')
+
+    if request.method == 'POST':
+        form = WynajemForm(request.POST, instance=wynajem)
+        if form.is_valid():
+            data_od = form.cleaned_data['data_od']
+            data_do = form.cleaned_data['data_do']
+            
+            czy_zajety = Wynajem.objects.filter(
+                samochod=wynajem.samochod,
+                data_od__lte=data_do,
+                data_do__gte=data_od
+            ).exclude(id=wynajem.id).exists()
+
+            if czy_zajety:
+                messages.error(request, "Auto jest zajęte w tym terminie.")
+                return render(request, 'wynajem_szczegoly.html', {
+                    'form': form, 
+                    'samochod': wynajem.samochod, # Upewnij się że nazwa to 'samochod' a nie 'auto'
+                    'edycja': True
+                })
+
+            wynajem.ilosc_dni = (data_do - data_od).days + 1
+            wynajem.laczna_cena = wynajem.ilosc_dni * wynajem.samochod.cena_za_dobe
+            wynajem.save()
+            messages.success(request, "Zaktualizowano termin.")
+            return redirect('moje_wynajmy')
+    else:
+        form = WynajemForm(instance=wynajem)
+        
+    return render(request, 'wynajem_szczegoly.html', {
+        'form': form, 
+        'samochod': wynajem.samochod, 
+        'edycja': True
+    })
+
+@login_required
+def edytuj_auto(request, pk):
+    # Pobieramy auto tylko jeśli należy do zalogowanego użytkownika
+    auto = get_object_or_404(Samochod, id=pk, wlasciciel=request.user)
+    
+    if request.method == 'POST':
+        form = SamochodForm(request.POST, instance=auto)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Dane samochodu zostały zaktualizowane.")
+            return redirect('moje_auta')
+    else:
+        form = SamochodForm(instance=auto)
+    
+    return render(request, 'dodaj_auto.html', {'form': form, 'edycja': True})
+
+@login_required
+def usun_auto(request, pk):
+    auto = get_object_or_404(Samochod, id=pk, wlasciciel=request.user)
+    auto.delete()
+    messages.success(request, "Samochód został usunięty z oferty.")
+    return redirect('moje_auta')

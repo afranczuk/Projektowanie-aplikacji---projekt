@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Dodaj Auto | Premium Fleet</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #121212; 
+            color: #e0e0e0; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .form-card { 
+            background: #1e1e1e; 
+            padding: 40px; 
+            border-radius: 20px; 
+            border: 1px solid #2a2a2a;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 { 
+            font-size: 1.8rem; 
+            font-weight: 600; 
+            color: #ffffff; 
+            text-align: center; 
+            margin-bottom: 30px;
+            letter-spacing: -1px;
+        }
+
+        /* Stylizacja pól formularza generowanych przez Django */
+        form p {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"], 
+        input[type="number"], 
+        select, 
+        textarea {
+            width: 100%;
+            padding: 12px;
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #448a44;
+            background: #2a2a2a;
+        }
+
+        .btn-save { 
+            width: 100%;
+            background: #448a44; 
+            color: white; 
+            padding: 14px; 
+            border: none;
+            border-radius: 10px; 
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        .btn-save:hover { 
+            background: #52a352;
+            transform: translateY(-2px);
+        }
+
+        .cancel-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .cancel-link:hover { color: #ff6b6b; }
+
+        /* Styl dla pomocy Django */
+        .helptext {
+            display: block;
+            font-size: 0.75rem;
+            color: #555;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-card">
+    <h1>Dodaj pojazd</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <button type="submit" class="btn-save">Zapisz auto w ofercie</button>
+    </form>
+
+    <a href="{% url 'moje_auta' %}" class="cancel-link">Anuluj i wróć do panelu</a>
+</div>
+
+</body>
+</html>

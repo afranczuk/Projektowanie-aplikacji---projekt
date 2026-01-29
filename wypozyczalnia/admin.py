@@ -69,3 +69,29 @@ class WniosekWlascicielAdmin(admin.ModelAdmin):
                 licznik += 1
         
         self.message_user(request, f"Pomyślnie zatwierdzono {licznik} wniosków.")
+
+@admin.action(description="Zatwierdź wybrane wnioski i zaktualizuj dane")
+def zatwierdz_wnioski(self, request, queryset):
+    grupa_wlasciciel, _ = Group.objects.get_or_create(name='Wlasciciel')
+    
+    for wniosek in queryset:
+        if not wniosek.zatwierdzony:
+            user = wniosek.uzytkownik
+            
+            # 1. Przepisujemy imię i nazwisko do modelu User
+            user.first_name = wniosek.imie
+            user.last_name = wniosek.nazwisko
+            user.groups.add(grupa_wlasciciel)
+            user.save()
+            
+            # 2. Przepisujemy telefon do UserProfil
+            # (get_or_create na wypadek gdyby profil jeszcze nie istniał)
+            profil, _ = UserProfil.objects.get_or_create(user=user)
+            profil.numer_telefonu = wniosek.numer_telefonu
+            profil.save()
+            
+            # 3. Zatwierdzamy wniosek
+            wniosek.zatwierdzony = True
+            wniosek.save()
+            
+    self.message_user(request, "Wnioski zatwierdzone, dane użytkowników zaktualizowane!")

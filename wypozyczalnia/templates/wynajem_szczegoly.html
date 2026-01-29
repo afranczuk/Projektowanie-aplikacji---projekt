@@ -1,23 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
-    <title>Wynajem auta</title>
+    <meta charset="UTF-8">
+    <title>
+        {% if edycja %}Edycja Rezerwacji{% else %}Szczegóły Wynajmu{% endif %} | Premium
+    </title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .details-card { background: #1e1e1e; padding: 40px; border-radius: 20px; border: 1px solid #2a2a2a; width: 100%; max-width: 500px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+        
+        /* Styl dla nagłówka zależny od trybu */
+        .mode-badge { font-size: 0.7rem; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; display: inline-block; font-weight: 600; }
+        .mode-edit { background: #1b2e1b; color: #5cb85c; border: 1px solid #2d4d2d; }
+        .mode-new { background: #1a1a33; color: #5c8ab8; border: 1px solid #2d3d5c; }
+
+        h1 { color: #fff; font-size: 2rem; margin: 5px 0 10px 0; letter-spacing: -1px; }
+        .car-info { color: #888; margin-bottom: 30px; border-bottom: 1px solid #2a2a2a; padding-bottom: 20px; }
+        .price-badge { font-size: 1.5rem; color: #5cb85c; font-weight: 600; margin-top: 10px; }
+        
+        form p { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: #999; text-transform: uppercase; }
+        
+        input[type="date"], input[type="number"], input[type="text"] { 
+            width: 100%; padding: 12px; background: #2a2a2a; border: 1px solid #333; border-radius: 8px; color: #fff; font-family: 'Inter', sans-serif;
+        }
+
+        .btn-confirm { width: 100%; background: #448a44; color: white; padding: 15px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-confirm:hover { background: #52a352; transform: translateY(-2px); }
+        
+        .back-link { display: block; text-align: center; margin-top: 20px; color: #555; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+        .back-link:hover { color: #888; }
+    </style>
 </head>
 <body>
-<h1>Wynajmujesz auto: {{ auto.marka }} {{ auto.model }}</h1>
-<p>Cena za dobę: {{ auto.cena_za_dobe }} zł</p>
-<p>Kolor: {{ auto.kolor }}</p>
-<p>Kategoria: {{ auto.kategoria.nazwa }}</p>
+    <div class="details-card">
+        {% if edycja %}
+            <span class="mode-badge mode-edit">Tryb Edycji</span>
+        {% else %}
+            <span class="mode-badge mode-new">Nowa Rezerwacja</span>
+        {% endif %}
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <p>
-        <label>
-            {{ form.akceptuje_regulamin }} Akceptuję <a href="/regulamin/">regulamin</a>
-        </label>
-    </p>
-    <button type="submit">Wynajmuję</button>
-</form>
+        <h1>{{ samochod.marka }} {{ samochod.model }}</h1>
+        
+        <div class="car-info">
+            Kategoria: <strong>{{ samochod.kategoria.nazwa }}</strong><br>
+            Rok produkcji: {{ samochod.rok_produkcji }}
+            <div class="price-badge">{{ samochod.cena_za_dobe }} PLN <span style="font-size: 0.8rem; color: #555;">/ doba</span></div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            
+            <button type="submit" class="btn-confirm">
+                {% if edycja %}Zatwierdź nowe daty{% else %}Potwierdź rezerwację{% endif %}
+            </button>
+        </form>
+
+        <a href="{% url 'moje_wynajmy' %}" class="back-link">
+            {% if edycja %}← Anuluj zmiany{% else %}← Wróć do listy{% endif %}
+        </a>
+    </div>
 </body>
 </html>

@@ -1,13 +1,164 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
-    <title>Rejestracja</title>
+    <meta charset="UTF-8">
+    <title>Rejestracja | Dark Premium</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #121212; 
+            color: #e0e0e0; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .auth-card { 
+            background: #1e1e1e; 
+            padding: 40px; 
+            border-radius: 15px; 
+            border: 1px solid #2a2a2a;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 { 
+            margin-bottom: 30px; 
+            font-weight: 600; 
+            color: #ffffff; 
+            text-align: center;
+            letter-spacing: -1px;
+        }
+
+        /* Stylizacja kontenerów akapitów generowanych przez Django */
+        form p {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Stylizacja wszystkich pól tekstowych i numerycznych */
+        input[type="text"], 
+        input[type="password"], 
+        input[type="email"], 
+        input[type="tel"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            box-sizing: border-box;
+            transition: 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #448a44;
+            background: #333;
+        }
+
+        /* Specjalne traktowanie dla checkboxa (Prawo jazdy) */
+        input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            accent-color: #448a44;
+            transform: scale(1.2);
+        }
+
+        /* Napisy pomocnicze Django (np. wymagania hasła) */
+        .helptext {
+            display: block;
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 5px;
+            line-height: 1.2;
+        }
+
+        .btn-submit { 
+            width: 100%;
+            background: #448a44; 
+            color: white; 
+            padding: 14px; 
+            border: none;
+            border-radius: 8px; 
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+        }
+
+        .btn-submit:hover { background: #52a352; }
+
+        .footer-links {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .footer-links a {
+            color: #448a44;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .errorlist {
+            color: #ff6b6b;
+            list-style: none;
+            padding: 10px;
+            background: #331a1a;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-<h2>Załóż konto w naszej wypożyczalni</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Zarejestruj się</button>
-</form>
-<p>Masz już konto? <a href="{% url 'logowanie' %}">Zaloguj się</a></p>
+
+<div class="auth-card">
+    <h2>Dołącz do nas</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        {# Wyświetlanie błędów walidacji #}
+        {% if form.errors %}
+            <div class="errorlist">
+                Popraw błędy w formularzu poniżej.
+            </div>
+        {% endif %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="btn-submit">Stwórz konto</button>
+    </form>
+
+    <div class="footer-links">
+        Masz już konto? <a href="{% url 'logowanie' %}">Zaloguj się</a>
+    </div>
+    <div class="footer-links" style="margin-top: 10px;">
+        <a href="{% url 'home' %}" style="color: #666; font-weight: 400;">← Powrót do strony głównej</a>
+    </div>
+</div>
+
+</body>
+</html>

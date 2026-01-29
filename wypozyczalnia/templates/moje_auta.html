@@ -1,72 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
-    <title>Moje Auta</title>
+    <meta charset="UTF-8">
+    <title>Panel Właściciela | Premium</title>
     <style>
-        /* Tutaj ląduje cały wygląd, żeby nie brudził kodu poniżej */
-        .lista-aut { list-style-type: none; padding: 0; }
-        .auto-item { margin-bottom: 25px; border-left: 4px solid #ccc; padding-left: 15px; }
-        .wynajete { color: red; font-weight: bold; }
-        .wolne { color: green; font-weight: bold; }
-        .dane-najemcy { background-color: #f4f4f4; padding: 5px; margin-top: 5px; border-radius: 4px; }
-        .techniczne { color: #666; font-size: 0.9em; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; padding: 0; 
+            background-color: #121212; color: #e0e0e0; 
+            line-height: 1.6; 
+        }
+
+        .container { width: 90%; max-width: 1000px; margin: 40px auto; }
+        h1 { font-size: 2.5rem; font-weight: 600; color: #fff; letter-spacing: -1px; margin-bottom: 10px; }
+        .back-link { color: #666; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+        .back-link:hover { color: #448a44; }
+
+        .stats-box { 
+            background: linear-gradient(135deg, #1e1e1e 0%, #252525 100%); 
+            padding: 30px; border-radius: 15px; border: 1px solid #2a2a2a; 
+            margin: 30px 0; display: flex; align-items: center; justify-content: space-between;
+        }
+        .stats-value { color: #fff; font-size: 2rem; font-weight: 600; }
+
+        .btn-add { 
+            display: inline-block; background: #448a44; color: white; 
+            padding: 12px 25px; text-decoration: none; border-radius: 8px; 
+            font-weight: 600; margin-bottom: 30px; transition: 0.3s;
+        }
+        .btn-add:hover { background: #52a352; transform: translateY(-2px); }
+
+        .car-card { 
+            background: #1e1e1e; padding: 30px; border-radius: 15px; 
+            border: 1px solid #2a2a2a; margin-bottom: 25px; 
+        }
+        
+        /* NOWE: Nagłówek karty z przyciskami */
+        .car-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .car-title h3 { margin: 0; color: #fff; font-size: 1.5rem; }
+
+        .action-buttons { display: flex; gap: 10px; }
+        
+        .btn-edit { 
+            background: #2d3d5c; color: #a0c4ff; padding: 6px 14px; 
+            border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600;
+            border: 1px solid #3d5585; transition: 0.3s;
+        }
+        .btn-edit:hover { background: #3d5585; color: #fff; }
+
+        .btn-delete { 
+            background: #3d1a1a; color: #ff8080; padding: 6px 14px; 
+            border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600;
+            border: 1px solid #5c2d2d; transition: 0.3s;
+        }
+        .btn-delete:hover { background: #5c2d2d; color: #fff; }
+
+        hr { border: 0; border-top: 1px solid #2a2a2a; margin: 20px 0; }
+        h4 { color: #5cb85c; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 12px 0; border-bottom: 1px solid #252525; font-size: 0.9rem; color: #b0b0b0; display: flex; justify-content: space-between; }
+        .rent-user { color: #fff; font-weight: 600; }
+
+        .msg { padding: 15px; border-radius: 8px; margin-bottom: 25px; text-align: center; }
+        .msg-success { background: #1b2e1b; color: #7cfc00; border: 1px solid #2d4d2d; }
     </style>
 </head>
 <body>
 
-<h1>Twoje samochody w ofercie</h1>
-<a href="{% url 'home' %}">Powrót do strony głównej</a>
-<hr>
-<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-    <h2 style="margin: 0;">Twój Portfel</h2>
-    <p style="font-size: 1.2em;">Łączny przychód z wynajmów: <strong>{{ total_zarobek }} zł</strong></p>
-</div>
-
-<ul class="lista-aut">
-    {% for auto in samochody %}
-        <li class="auto-item">
-            <strong>{{ auto.marka }} {{ auto.model }}</strong> ({{ auto.cena_za_dobe }} zł/doba)
-            
-            <div class="techniczne">
-                VIN: {{ auto.numer_vin }} | Rok produkcji: {{ auto.rok_produkcji }}
-            </div>
-
-            {% with wynajem=auto.aktualny_wynajem %}
-                {% if wynajem %}
-                    <span class="wynajete">● WYNAJĘTE (do {{ wynajem.data_do }})</span>
-                    <div class="dane-najemcy">
-                        <strong>Najemca:</strong> {{ wynajem.uzytkownik.username }} | 
-                        <strong>Kontakt:</strong> {{ wynajem.uzytkownik.userprofil.numer_telefonu }}
-                    </div>
-                {% else %}
-                    <span class="wolne">● WOLNE</span>
-                {% endif %}
-            {% endwith %}
-        </li>
-    {% empty %}
-        <li>Nie masz jeszcze dodanych żadnych samochodów.</li>
-    {% endfor %}
-</ul>
-<details style="margin-top: 10px; cursor: pointer;">
-    <summary>Pokaż historię wynajmów tego auta</summary>
-    <table border="1" style="width: 100%; margin-top: 10px; border-collapse: collapse;">
-        <tr style="background: #eee;">
-            <th>Najemca</th>
-            <th>Termin</th>
-            <th>Kwota</th>
-        </tr>
-        {% for w in auto.wynajem_set.all %}
-        <tr>
-            <td>{{ w.uzytkownik.username }}</td>
-            <td>{{ w.data_od }} - {{ w.data_do }}</td>
-            <td>{{ w.laczna_cena }} zł</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="3">Brak historii wynajmów.</td></tr>
+<div class="container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="msg msg-success">{{ message }}</div>
         {% endfor %}
-    </table>
-</details>
+    {% endif %}
 
+    <a href="{% url 'home' %}" class="back-link">← Powrót do strony głównej</a>
+    <h1>Panel Właściciela</h1>
+
+    <div class="stats-box">
+        <h3>Twoje całkowite zarobki</h3>
+        <div class="stats-value">{{ total_zarobek }} PLN</div>
+    </div>
+
+    <a href="{% url 'dodaj_auto' %}" class="btn-add">+ Dodaj nowe auto</a>
+
+    <h2 style="margin-top: 40px; font-weight: 400;">Twoje auta</h2>
+
+    {% for auto in samochody %}
+        <div class="car-card">
+            <div class="car-header">
+                <div class="car-title">
+                    <h3>{{ auto.marka }} {{ auto.model }} <span style="color: #444; font-weight: 300;">{{ auto.rok_produkcji }}</span></h3>
+                    <p>Stawka: <strong>{{ auto.cena_za_dobe }} zł / doba</strong></p>
+                    <p>Kolor: {{ auto.kolor }}</p>
+                </div>
+                <div class="action-buttons">
+                    <a href="{% url 'edytuj_auto' auto.id %}" class="btn-edit">Edytuj</a>
+                    <a href="{% url 'usun_auto' auto.id %}" class="btn-delete" onclick="return confirm('Czy na pewno chcesz trwale usunąć ten samochód?')">Usuń</a>
+                </div>
+            </div>
+            
+            <hr>
+            <h4>Historia aktywności:</h4>
+            <ul>
+            {% for wynajem in auto.wynajem_set.all %}
+                <li>
+                    <span>{{ wynajem.data_od }} — {{ wynajem.data_do }}</span>
+                    <span>Użytkownik: <span class="rent-user">{{ wynajem.uzytkownik.username }}</span></span>
+                    <span class="rent-price">+ {{ wynajem.laczna_cena }} zł</span>
+                </li>
+            {% empty %}
+                <li style="color: #444;">Brak dotychczasowych wynajmów dla tego pojazdu.</li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% empty %}
+        <p style="color: #666; text-align: center; margin-top: 50px;">Twoja lista aut jest pusta.</p>
+    {% endfor %}
+</div>
 
 </body>
 </html>
